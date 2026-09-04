@@ -1,0 +1,23 @@
+[Unit]
+Description=Aquila DWIN T5UIC1 Control Panel
+Wants=network-online.target moonraker.service
+After=network-online.target klipper.service moonraker.service
+
+[Service]
+Type=simple
+User=kount
+Group=kount
+WorkingDirectory=/home/kount/DWIN_T5UIC1_LCD
+
+# Do not start the DWIN bridge until Moonraker's HTTP API is actually ready.
+ExecStartPre=/bin/sh -c 'until /usr/bin/curl -fsS http://127.0.0.1:7125/api/printer >/dev/null; do sleep 2; done'
+
+ExecStart=/home/kount/dwin-venv/bin/python3 /home/kount/DWIN_T5UIC1_LCD/aquila_landscape_control_v14.py
+
+Restart=always
+RestartSec=5
+TimeoutStartSec=infinity
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
